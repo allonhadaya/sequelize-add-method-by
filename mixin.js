@@ -1,11 +1,11 @@
 'use strict';
 
-module.exports = { config: config };
+module.exports = { define: define };
 
 /**
  * define Model.prototype.mixin
  */
-function config() {
+function define() {
   require('sequelize').Model.prototype.mixin = mixin;
 }
 
@@ -13,7 +13,7 @@ function config() {
  * instances of the model will receive additional methods
  *
  * ```js
- * require('sequelize-mixins').config();
+ * require('sequelize-mixins').define();
  *
  * const User = sequelize.define('user', {
  *   role: {

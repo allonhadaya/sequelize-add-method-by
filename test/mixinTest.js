@@ -9,22 +9,22 @@ const sequelize = new Sequelize({
 
 describe('Model.prototype.mixin', () => {
 
-  describe('before calling config', () => {
+  describe('before calling define', () => {
 
-    it('should not exist before calling config', () => {
+    it('should not exist before calling define', () => {
 
       const m = sequelize.define('m', {});
       assert.notProperty(m, 'mixin');
     });
   });
 
-  describe('after calling config', () => {
+  describe('after calling define', () => {
 
     before(() => {
-      require('../mixin').config();
+      require('../mixin').define();
     });
 
-    it('should exist', () => {
+    it('should exist after calling define', () => {
 
       const m = sequelize.define('m', {});
       assert.property(m, 'mixin');
