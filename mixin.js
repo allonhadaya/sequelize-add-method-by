@@ -13,6 +13,8 @@ function config() {
  * instances of the model will receive additional methods
  *
  * ```js
+ * require('sequelize-mixins').config();
+ *
  * const User = sequelize.define('user', {
  *   role: {
  *     type: Sequelize.ENUM,

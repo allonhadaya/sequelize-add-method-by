@@ -147,5 +147,51 @@ describe('Model.prototype.mixin', () => {
           assert.equal(foundNormal.methodB, normalB);
         });
     });
+
+    it('should support multiple mixins', () => {
+
+      function a() {}
+      function n() {}
+      function o() {}
+      function y() {}
+
+      const User = sequelize.define('user', {
+        role: {
+          type: Sequelize.ENUM,
+          values: ['admin', 'normal']
+        },
+        age: {
+          type: Sequelize.ENUM,
+          values: ['old', 'young']
+        }
+      }).mixin('role', {
+        admin: { roleMethod: a },
+        normal: { roleMethod: n }
+      }).mixin('age', {
+        old: { ageMethod: o },
+        young: { ageMethod: y }
+      });
+
+      return User.sync()
+        .then(() => Sequelize.Promise.all([
+          User.create({ role: 'admin', age: 'old' }),
+          User.create({ role: 'admin', age: 'young' }),
+          User.create({ role: 'normal', age: 'old' }),
+          User.create({ role: 'normal', age: 'young' })
+        ]))
+        .then(([ao, ay, no, ny]) => {
+
+          assert.equal(ao.roleMethod, a);
+          assert.equal(ay.roleMethod, a);
+          assert.equal(no.roleMethod, n);
+          assert.equal(ny.roleMethod, n);
+
+          assert.equal(ao.ageMethod, o);
+          assert.equal(ay.ageMethod, y);
+          assert.equal(no.ageMethod, o);
+          assert.equal(ny.ageMethod, y);
+        })
+        // assuming finding works
+    });
   });
 });
