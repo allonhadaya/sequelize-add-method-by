@@ -1,0 +1,23 @@
+{
+  "name": "sequelize-mixins",
+  "version": "1.0.0",
+  "main": "mixin.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha test"
+  },
+  "keywords": [
+    "sequelize",
+    "mixins"
+  ],
+  "author": "Allon Hadaya <self@allon.nyc>",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "sequelize": "^3.30.2",
+    "sqlite3": "^3.1.8"
+  },
+  "peerDependencies": {
+    "sequelize": "3.x"
+  }
+}
