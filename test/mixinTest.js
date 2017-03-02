@@ -24,10 +24,6 @@ describe('Model.prototype.mixin', () => {
       require('../mixin').config();
     });
 
-    beforeEach(() => {
-      sequelize.drop();
-    });
-
     it('should exist', () => {
 
       const m = sequelize.define('m', {});
@@ -98,7 +94,7 @@ describe('Model.prototype.mixin', () => {
         }
       });
 
-      return User.sync()
+      return User.sync({ force: true })
         .then(() => User.create({ role: 'admin' }))
         .then(created => {
           assert.property(created, 'methodA');
@@ -128,7 +124,7 @@ describe('Model.prototype.mixin', () => {
         normal: { methodA: normalA, methodB: normalB }
       });
 
-      return User.sync()
+      return User.sync({ force: true })
         .then(() => Sequelize.Promise.all([
           User.create({ role: 'admin' }),
           User.create({ role: 'normal' })
@@ -172,7 +168,7 @@ describe('Model.prototype.mixin', () => {
         young: { ageMethod: y }
       });
 
-      return User.sync()
+      return User.sync({ force: true })
         .then(() => Sequelize.Promise.all([
           User.create({ role: 'admin', age: 'old' }),
           User.create({ role: 'admin', age: 'young' }),
