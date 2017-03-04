@@ -3,10 +3,10 @@
 module.exports = { define: define };
 
 /**
- * define Model.prototype.mixin
+ * define Model.prototype.addMethodBy
  */
 function define() {
-  require('sequelize').Model.prototype.mixin = mixin;
+  require('sequelize').Model.prototype.addMethodBy = addMethodBy;
 }
 
 /**
@@ -18,11 +18,11 @@ function define() {
  * const User = sequelize.define('user', {
  *   role: {
  *     type: Sequelize.ENUM,
- *     values: ['admin', 'normal']
+ *     values: ['normal', 'admin']
  *   }
- * }).mixin('role', {
- *   admin: { destroyEverything() { console.log('sure.'); } },
- *   normal: { destroyEverything() { throw new Error('no, thanks.'); } }
+ * }).addMethodBy('role', 'destroyEverything', {
+ *   normal: { function() { throw new Error('no, thanks.'); } },
+ *   admin: { function() { console.log('sure.'); } }
  * });
  *
  * User
@@ -33,61 +33,29 @@ function define() {
  *
  * ```
  *
- * @param {String} attribute The attribute whose value determines which mixin to inherit.
- * @param {Object} mixins The different method implementations. Each property should be an object with the same methods.
+ * @param {String} attributeName The attribute whose value determines which method to dispatch.
+ * @param {String} methodName The name of the method to be added.
+ * @param {Object} methods The different method implementations for each attribute value.
  */
-function mixin(attribute, mixins) {
+function addMethodBy(attributeName, methodName, methods) {
 
-  validateMixin(this, attribute, mixins);
+  if (!(attributeName in this.attributes && 'values' in this.attributes[attributeName])) {
+    throw new Error(`Model method ${methodName} must defined over an ENUM attribute.`);
+  }
 
-  this.beforeCreate(extendOneOrMany);
-  this.afterFind(extendOneOrMany);
+  var values = new Set(this.attributes[attributeName].values);
+
+  for (let value in methods) {
+    values.delete(value);
+  }
+
+  if (values.size > 0) {
+    throw new Error(`Model method ${methodName} is missing an implementation for some attribute values: ${values}`);
+  }
+
+  Object.defineProperty(this.Instance.prototype, methodName, {
+    get: function () { return methods[this[attributeName]]; }
+  });
+
   return this;
-
-  function extendOneOrMany(instance) {
-    if (Array.isArray(instance)) {
-      instance.forEach(extendOne);
-    } else {
-      extendOne(instance);
-    }
-  }
-
-  function extendOne(instance) {
-    Object.assign(instance, mixins[instance[attribute]]);
-  }
-}
-
-function validateMixin(model, attribute, mixins) {
-
-  if (!(attribute in model.attributes)) {
-    throw new Error('Mixin attribute must be defined on the model: ' + attribute);
-  }
-
-  var type = model.attributes[attribute];
-
-  if (!('values' in type)) {
-    throw new Error('Mixin attribute must be an ENUM with values');
-  }
-
-  var values = type.values;
-
-  if (!(values.every(function (v) { return v in mixins; }))) {
-    throw new Error('Mixins must be provided for each ENUM value: ' + values);
-  }
-
-  var value;
-  var method;
-
-  var methodCount = {};
-  for (value in mixins) {
-    for (method in mixins[value]) {
-      methodCount[method] = (methodCount[method] || 0) + 1;
-    }
-  }
-
-  for (method in methodCount) {
-    if (methodCount[method] !== values.length) {
-      throw new Error('Mixin methods must be defined consistently for each ENUM value.');
-    }
-  }
 }

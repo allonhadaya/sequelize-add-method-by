@@ -7,14 +7,14 @@ const sequelize = new Sequelize({
   storage: ':memory:'
 });
 
-describe('Model.prototype.mixin', () => {
+describe('Model.prototype.addMethodBy', () => {
 
   describe('before calling define', () => {
 
     it('should not exist before calling define', () => {
 
       const m = sequelize.define('m', {});
-      assert.notProperty(m, 'mixin');
+      assert.notProperty(m, 'addMethodBy');
     });
   });
 
@@ -27,7 +27,7 @@ describe('Model.prototype.mixin', () => {
     it('should exist after calling define', () => {
 
       const m = sequelize.define('m', {});
-      assert.property(m, 'mixin');
+      assert.property(m, 'addMethodBy');
     });
 
     it('should throw an error when attribute does not exist', () => {
@@ -35,7 +35,7 @@ describe('Model.prototype.mixin', () => {
       assert.throws(() => {
         sequelize.define('user', {
           // nothing
-        }).mixin('doesNotExist', { });
+        }).addMethodBy('doesNotExist', 'methodA', { });
       });
     });
 
@@ -44,8 +44,8 @@ describe('Model.prototype.mixin', () => {
       assert.throws(() => {
         sequelize.define('user', {
           role: Sequelize.STRING
-        }).mixin('role', {
-          admin: { methodA() {} }
+        }).addMethodBy('role', 'methodA', {
+          admin: function () {}
         });
       });
 
@@ -59,23 +59,8 @@ describe('Model.prototype.mixin', () => {
             type: Sequelize.ENUM,
             values: ['admin', 'valueNotImplemented']
           }
-        }).mixin('role', {
-          admin: { methodA() {} }
-        });
-      });
-    });
-
-    it('should throw an error when implementations have different methods', () => {
-
-      assert.throws(() => {
-        sequelize.define('user', {
-          role: {
-            type: Sequelize.ENUM,
-            values: ['admin', 'normal']
-          }
-        }).mixin('role', {
-          admin: { methodA() {} }, // missing methodB
-          normal: { methodA() {}, methodB() {} }
+        }).addMethodBy('role', 'methodA', {
+          admin: function () {}
         });
       });
     });
@@ -87,11 +72,10 @@ describe('Model.prototype.mixin', () => {
           type: Sequelize.ENUM,
           values: ['admin']
         }
-      }).mixin('role', {
-        admin: {
-          methodA() {},
-          methodB() {}
-        }
+      }).addMethodBy('role', 'methodA', {
+        admin: function () {}
+      }).addMethodBy('role', 'methodB', {
+        admin: function () {}
       });
 
       return User.sync({ force: true })
@@ -119,9 +103,12 @@ describe('Model.prototype.mixin', () => {
           type: Sequelize.ENUM,
           values: ['admin', 'normal']
         }
-      }).mixin('role', {
-        admin: { methodA: adminA, methodB: adminB },
-        normal: { methodA: normalA, methodB: normalB }
+      }).addMethodBy('role', 'methodA', {
+        admin: adminA,
+        normal: normalA
+      }).addMethodBy('role', 'methodB', {
+        admin: adminB,
+        normal: normalB
       });
 
       return User.sync({ force: true })
@@ -144,7 +131,7 @@ describe('Model.prototype.mixin', () => {
         });
     });
 
-    it('should support multiple mixins', () => {
+    it('should support multiple attributes', () => {
 
       function a() {}
       function n() {}
@@ -160,12 +147,12 @@ describe('Model.prototype.mixin', () => {
           type: Sequelize.ENUM,
           values: ['old', 'young']
         }
-      }).mixin('role', {
-        admin: { roleMethod: a },
-        normal: { roleMethod: n }
-      }).mixin('age', {
-        old: { ageMethod: o },
-        young: { ageMethod: y }
+      }).addMethodBy('role', 'roleMethod', {
+        admin: a,
+        normal: n
+      }).addMethodBy('age', 'ageMethod', {
+        old: o,
+        young: y
       });
 
       return User.sync({ force: true })
