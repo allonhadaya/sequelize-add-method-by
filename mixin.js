@@ -40,7 +40,7 @@ function define() {
 function addMethodBy(attributeName, methodName, methods) {
 
   if (!(attributeName in this.attributes && 'values' in this.attributes[attributeName])) {
-    throw new Error(`Model method ${methodName} must defined over an ENUM attribute.`);
+    throw new Error(`Model method ${methodName} must defined over an ENUM attribute`);
   }
 
   var values = new Set(this.attributes[attributeName].values);
