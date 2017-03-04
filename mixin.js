@@ -28,9 +28,7 @@ function define() {
  * User
  *  .create({ role: 'admin' })
  *  .then(a => { a.destroyEverything(); });
- *
  * // => sure.
- *
  * ```
  *
  * @param {String} attributeName The attribute whose value determines which method to dispatch.
@@ -50,7 +48,8 @@ function addMethodBy(attributeName, methodName, methods) {
   }
 
   if (values.size > 0) {
-    throw new Error(`Model method ${methodName} is missing an implementation for some attribute values: ${values}`);
+    const { inspect } = require('util');
+    throw new Error(`Model method ${methodName} is missing an implementation for some attribute values: ${inspect(values)}`);
   }
 
   Object.defineProperty(this.Instance.prototype, methodName, {
