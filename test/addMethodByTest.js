@@ -4,7 +4,8 @@ const Sequelize = require('sequelize');
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: ':memory:'
+  storage: ':memory:',
+  define: { timestamps: false }
 });
 
 describe('Model.prototype.addMethodBy', () => {
@@ -30,73 +31,117 @@ describe('Model.prototype.addMethodBy', () => {
       assert.property(m, 'addMethodBy');
     });
 
-    it('should support a single implementation', () => {
+    it('should add multiple methods on a single value when created and found', () => {
+
+      function adminA() {}
+      function adminB() {}
+
+      const check = admin => {
+        assert.equal(admin.methodA, adminA);
+        assert.equal(admin.methodB, adminB);
+      };
 
       const User = sequelize.define('user', {
         role: {
           type: Sequelize.ENUM,
           values: ['admin']
         }
-      }).addMethodBy('role', 'methodA', {
-        admin: function () {}
-      }).addMethodBy('role', 'methodB', {
-        admin: function () {}
-      });
+      })
+        .addMethodBy('role', 'methodA', { admin: adminA })
+        .addMethodBy('role', 'methodB', { admin: adminB });
 
-      return User.sync({ force: true })
+      return User
+        .sync({ force: true })
         .then(() => User.create({ role: 'admin' }))
-        .then(created => {
-          assert.property(created, 'methodA');
-          assert.property(created, 'methodB');
-        })
+        .then(check)
         .then(() => User.findOne())
-        .then(found => {
-          assert.property(found, 'methodA');
-          assert.property(found, 'methodB');
-        });
+        .then(check);
     });
 
-    it('should support multiple implementations', () => {
+    it('should resolve the default method when no methods are provided', () => {
 
-      function adminA() {}
-      function adminB() {}
-      function normalA() {}
-      function normalB() {}
+      function defaultA() {}
 
       const User = sequelize.define('user', {
         role: {
           type: Sequelize.ENUM,
-          values: ['admin', 'normal']
+          values: ['normal', 'admin']
         }
-      }).addMethodBy('role', 'methodA', {
-        admin: adminA,
-        normal: normalA
-      }).addMethodBy('role', 'methodB', {
-        admin: adminB,
-        normal: normalB
-      });
+      })
+        .addMethodBy('role', 'methodA', {}, defaultA);
 
-      return User.sync({ force: true })
+      return User
+        .sync({ force: true })
         .then(() => Sequelize.Promise.all([
-          User.create({ role: 'admin' }),
-          User.create({ role: 'normal' })
+          User.create({ role: 'normal' }),
+          User.create({ role: 'admin' })
         ]))
-        .then(([createdAdmin, createdNormal]) => {
-          assert.equal(createdAdmin.methodA, adminA);
-          assert.equal(createdAdmin.methodB, adminB);
-          assert.equal(createdNormal.methodA, normalA);
-          assert.equal(createdNormal.methodB, normalB);
-        })
-        .then(() => User.findAll({ orderBy: 'role' }))
-        .then(([foundAdmin, foundNormal]) => {
-          assert.equal(foundAdmin.methodA, adminA);
-          assert.equal(foundAdmin.methodB, adminB);
-          assert.equal(foundNormal.methodA, normalA);
-          assert.equal(foundNormal.methodB, normalB);
+        .then(([normal, admin]) => {
+          assert.equal(normal.methodA, defaultA);
+          assert.equal(admin.methodA, defaultA);
         });
     });
 
-    it('should support multiple attributes', () => {
+    it('should resolve the specific method before the default method', () => {
+
+      function adminA() {}
+      function defaultA() {}
+
+      const User = sequelize.define('user', {
+        role: {
+          type: Sequelize.ENUM,
+          values: ['normal', 'admin']
+        }
+      })
+        .addMethodBy('role', 'methodA', { admin: adminA }, defaultA);
+
+      return User
+        .sync({ force: true })
+        .then(() => Sequelize.Promise.all([
+          User.create({ role: 'normal' }),
+          User.create({ role: 'admin' })
+        ]))
+        .then(([normal, admin]) => {
+          assert.equal(normal.methodA, defaultA);
+          assert.equal(admin.methodA, adminA);
+        });
+
+    });
+
+    it('should support multiple methods for multiple values', () => {
+
+      function normalA() {}
+      function adminA() {}
+
+      function normalB() {}
+      function adminB() {}
+
+      const User = sequelize.define('user', {
+        role: {
+          type: Sequelize.ENUM,
+          values: ['normal', 'admin']
+        }
+      })
+        .addMethodBy('role', 'methodA', { normal: normalA, admin: adminA })
+        .addMethodBy('role', 'methodB', { normal: normalB, admin: adminB });
+
+      return User
+        .sync({ force: true })
+        .then(() => Sequelize.Promise.all([
+          User.create({ role: 'normal' }),
+          User.create({ role: 'admin' })
+        ]))
+        .then(([normal, admin]) => {
+
+          assert.equal(normal.methodA, normalA);
+          assert.equal(admin.methodA, adminA);
+
+          assert.equal(normal.methodB, normalB);
+          assert.equal(admin.methodB, adminB);
+        });
+    });
+
+    it('should support adding methods by multiple properties', () => {
 
       function a() {}
       function n() {}
@@ -112,15 +157,12 @@ describe('Model.prototype.addMethodBy', () => {
           type: Sequelize.ENUM,
           values: ['old', 'young']
         }
-      }).addMethodBy('role', 'roleMethod', {
-        admin: a,
-        normal: n
-      }).addMethodBy('age', 'ageMethod', {
-        old: o,
-        young: y
-      });
+      })
+        .addMethodBy('role', 'roleMethod', { admin: a, normal: n })
+        .addMethodBy('age', 'ageMethod', { old: o, young: y });
 
-      return User.sync({ force: true })
+      return User
+        .sync({ force: true })
         .then(() => Sequelize.Promise.all([
           User.create({ role: 'admin', age: 'old' }),
           User.create({ role: 'admin', age: 'young' }),
@@ -138,8 +180,7 @@ describe('Model.prototype.addMethodBy', () => {
           assert.equal(ay.ageMethod, y);
           assert.equal(no.ageMethod, o);
           assert.equal(ny.ageMethod, y);
-        })
-        // assuming finding works
+        });
     });
   });
 });
