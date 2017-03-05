@@ -1,5 +1,5 @@
 {
-  "name": "sequelize-mixins",
+  "name": "sequelize-add-method-by",
   "version": "1.0.0",
   "main": "addMethodBy.js",
   "scripts": {
