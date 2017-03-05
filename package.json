@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "addMethodBy.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test"
+    "test": "./node_modules/.bin/mocha",
+    "coverage": "./node_modules/.bin/istanbul cover --report none --print both ./node_modules/mocha/bin/_mocha"
   },
   "keywords": [
     "sequelize",
@@ -14,6 +15,7 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.5.0",
+    "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
     "sequelize": "^3.30.2",
     "sqlite3": "^3.1.8"
