@@ -21,48 +21,13 @@ describe('Model.prototype.addMethodBy', () => {
   describe('after calling define', () => {
 
     before(() => {
-      require('../mixin').define();
+      require('../addMethodBy');
     });
 
     it('should exist after calling define', () => {
 
       const m = sequelize.define('m', {});
       assert.property(m, 'addMethodBy');
-    });
-
-    it('should throw an error when attribute does not exist', () => {
-
-      assert.throws(() => {
-        sequelize.define('user', {
-          // nothing
-        }).addMethodBy('doesNotExist', 'methodA', { });
-      });
-    });
-
-    it('should throw an error when attribute is not an ENUM', () => {
-
-      assert.throws(() => {
-        sequelize.define('user', {
-          role: Sequelize.STRING
-        }).addMethodBy('role', 'methodA', {
-          admin: function () {}
-        });
-      });
-
-    });
-
-    it('should throw an error when implementations are missing', () => {
-
-      assert.throws(() => {
-        sequelize.define('user', {
-          role: {
-            type: Sequelize.ENUM,
-            values: ['admin', 'valueNotImplemented']
-          }
-        }).addMethodBy('role', 'methodA', {
-          admin: function () {}
-        });
-      });
     });
 
     it('should support a single implementation', () => {

@@ -1,7 +1,7 @@
 {
   "name": "sequelize-mixins",
   "version": "1.0.0",
-  "main": "mixin.js",
+  "main": "addMethodBy.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha test"
   },
