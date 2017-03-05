@@ -6,6 +6,8 @@ require('sequelize').Model.prototype.addMethodBy = addMethodBy;
  * Instances of the model will receive a new method, dispatched depending on the value of a specified property.
  *
  * ```js
+ * require('sequelize-add-method-by');
+ *
  * const User = sequelize.define('user', {
  *   role: {
  *     type: Sequelize.ENUM,
