@@ -9,22 +9,22 @@ const sequelize = new Sequelize({
 
 describe('Model.prototype.addMethodBy', () => {
 
-  describe('before calling define', () => {
+  describe('before being required', () => {
 
-    it('should not exist before calling define', () => {
+    it('should not exist', () => {
 
       const m = sequelize.define('m', {});
       assert.notProperty(m, 'addMethodBy');
     });
   });
 
-  describe('after calling define', () => {
+  describe('after being required', () => {
 
     before(() => {
       require('../addMethodBy');
     });
 
-    it('should exist after calling define', () => {
+    it('should exist', () => {
 
       const m = sequelize.define('m', {});
       assert.property(m, 'addMethodBy');
